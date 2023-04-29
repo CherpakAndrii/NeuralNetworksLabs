@@ -10,6 +10,7 @@ def train_model(hidden_neurons, x_train, y_train, x_test, y_test, epochs, batch_
     mdl.fit(x_train, y_train, epochs=epochs, batch_size=batch_size, validation_data=(x_test, y_test), verbose=1)
     return mdl
 
+
 if __name__ == '__main__':
     (x_train, y_train), (x_test, y_test) = tf.keras.datasets.mnist.load_data()
     model = train_model([75, 75, 75], x_train, y_train, x_test, y_test, 30, 120)
