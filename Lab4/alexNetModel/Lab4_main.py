@@ -1,6 +1,7 @@
 from matplotlib import pyplot as plt
 from get_data import get_data, process_ds, get_ds_size, visualize_data
 from nn_model import AlexNet, compile_model
+import pandas as pd
 
 CLASS_NAMES = ['airplane', 'automobile', 'bird', 'cat', 'deer', 'dog', 'frog', 'horse', 'ship', 'truck']
 
@@ -9,8 +10,8 @@ def graph(training_log):
     plt.title('Mean squared error')
     plt.xlabel('Epochs')
     plt.ylabel('Loss')
-    plt.plot(training_log.history['loss'], label='Train loss')
-    plt.plot(training_log.history['val_loss'], label='Validation loss')
+    plt.plot(training_log['loss'], label='Train loss')
+    plt.plot(training_log['val_loss'], label='Validation loss')
     plt.grid()
     plt.legend()
     plt.show()
@@ -18,11 +19,15 @@ def graph(training_log):
     plt.title('Accuracy')
     plt.xlabel('Epochs')
     plt.ylabel('Accuracy')
-    plt.plot(training_log.history['accuracy'], label='Train accuracy')
-    plt.plot(training_log.history['val_accuracy'], label='Validation accuracy')
+    plt.plot(training_log['accuracy'], label='Train accuracy')
+    plt.plot(training_log['val_accuracy'], label='Validation accuracy')
     plt.grid()
     plt.legend()
     plt.show()
+
+
+def save_log(training_log):
+    pd.DataFrame.from_dict(training_log.history).to_csv('log_history.csv')
 
 
 if __name__ == '__main__':
@@ -43,10 +48,17 @@ if __name__ == '__main__':
 
     mdl = AlexNet(len(CLASS_NAMES))
     model = compile_model(mdl)
+    log_df = pd.DataFrame()
 
-    log = model.fit(train_ds, epochs=10, validation_data=validation_ds, validation_freq=1)
+    # model = keras.models.load_model('alexNet2.h5')
+    # log_df = pd.read_csv('log_history.csv')
+
+    for i in range(0, 6):
+        print('\tphase', i, '\n')
+        log = model.fit(train_ds, epochs=5, validation_data=validation_ds, validation_freq=1)
+        model.save(f'alexNet{i}.h5')
+        log_df = pd.concat([log_df, pd.DataFrame.from_dict(log.history)], ignore_index=True)
+        log_df.to_csv('log_history.csv')
+
     model.evaluate(test_ds)
-
-    graph(log)
-
-    model.save('alexNet.h5')
+    graph(log_df)
